@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "640294732754",
+    "project_id": "lottologin-62020",
+    "storage_bucket": "lottologin-62020.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:640294732754:android:219054e8d97298156e7e0b",
+        "android_client_info": {
+          "package_name": "com.lot.lottopicker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "640294732754-c18c4q2pha8rtrujh5tf5lejcfh7j6vr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lot.lottopicker",
+            "certificate_hash": "951b99110a86667695fd475e91656d72ea420064"
+          }
+        },
+        {
+          "client_id": "640294732754-e076i5s52fc4129vjgfjf1tah0dog3ua.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWLRBtJDOe73e80MeJABGF8DdG-dDS6RU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "640294732754-e076i5s52fc4129vjgfjf1tah0dog3ua.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
