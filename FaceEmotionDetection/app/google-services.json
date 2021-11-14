@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "475367448623",
+    "project_id": "facialdetectionandsong",
+    "storage_bucket": "facialdetectionandsong.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:475367448623:android:8772cea9f3b9ca4aefe6da",
+        "android_client_info": {
+          "package_name": "com.lot.fec"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "475367448623-15dmo83tonhn6pm32ugkenl8n1svh08e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcFka31C9wx81CWwLTFNQ9WzkmQw6ploI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "475367448623-15dmo83tonhn6pm32ugkenl8n1svh08e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">블루채팅</string>
+    <string name="str_label_btn_send">보내기</string>
+    <string name="str_menu_search_devices">근처 디바이스 찾기</string>
+    <string name="str_menu_bluetooth_on">블루투스 켜기</string>
+
+    <string name="str_paired_devices">현재 연결된 디바이스</string>
+    <string name="str_available_devices">연결 가능한 디바이스</string>
+    <string name="str_menu_scan_devices">근처 디바이스 스캔</string>
+</resources>
