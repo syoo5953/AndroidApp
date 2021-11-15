@@ -5,6 +5,7 @@ P.S) 구글 플레이스토어 출시완료 앱: 유신로또(YouShinLotto 폴�
 ### 프로젝트 타임라인
 - 현재 작업 진행도: 기능 1, 2, 3번
 - 현재 작업까지 소요한 총 시간: 1일
+- 완성까지 예상기간: 기능개발 2일 (최대 2021년 11월 19일까지) + 1일 (UI 디자인 개선)
 
 - 기능
 
@@ -17,3 +18,7 @@ P.S) 구글 플레이스토어 출시완료 앱: 유신로또(YouShinLotto 폴�
 #### 로그인 화면
 
 ![Screenshot_20211116-023320 (1)](https://user-images.githubusercontent.com/92070358/141828253-9dd38b1e-8ba5-4655-bdf8-b3ff92b672e9.jpg)
+
+#### 진행상황
+
+https://www.youtube.com/watch?v=TCFBz9k_AcY
