@@ -1,0 +1,2 @@
+rootProject.name = "ChatAndTranslate"
+include ':app'

@@ -26,6 +26,8 @@ import com.google.firebase.auth.GoogleAuthProvider;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
+    private FirebaseAuth firebaseAuth;
+
     private static final String TAG = "MainActivity";
     private SignInButton signInButton;
     private GoogleApiClient googleApiClient;
@@ -33,7 +35,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     TextView txt_view;
     String name, email;
     String idToken;
-    private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
 
     @Override
