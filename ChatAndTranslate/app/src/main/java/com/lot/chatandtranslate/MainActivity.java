@@ -36,7 +36,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -64,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     FirebaseAuth mAuth;
     FirebaseUser mUser;
     DatabaseReference mUserRef, mPostRef, likeRef, commentRef;
+
     String profileURIImgV, usernameV;
     CircleImageView profileImgHeader;
     TextView usernameHeader;
@@ -86,7 +89,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toolbar = findViewById(R.id.app_bar);
         mLoadingBar = new ProgressDialog(this);
         recyclerView = findViewById(R.id.recyclerview);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setStackFromEnd(true);
+        linearLayoutManager.setReverseLayout(true);
+        recyclerView.setLayoutManager(linearLayoutManager);
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("번역채팅 App");
@@ -112,19 +118,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         usernameHeader = view.findViewById(R.id.username_header);
         navigationView.setNavigationItemSelectedListener(this);
 
-        sendImgPost.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AddPost();
-            }
-        });
-        addImgPost.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("image/*");
-                startActivityForResult(intent, REQUEST_CODE);
-            }
+        FirebaseMessaging.getInstance().subscribeToTopic(mUser.getUid());
+
+        sendImgPost.setOnClickListener(v -> AddPost());
+        addImgPost.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+            startActivityForResult(intent, REQUEST_CODE);
         });
 
         LoadPost();
@@ -137,11 +137,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             protected void onBindViewHolder(@NonNull @NotNull MyViewHolder holder, int position, @NonNull @NotNull Posts model) {
                 String postKey = getRef(position).getKey();
                 holder.postDesc.setText(model.getPostDesc());
-                String timeAgo = calculateTimeAgo(model.getDate());
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Date date = null;
+                try {
+                    date = format.parse(model.getDate());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                String timeAgo = formatTimeString(date);
                 holder.timeAgo.setText(timeAgo);
                 holder.username.setText(model.getUsername());
 
-                Picasso.get().load(model.getPostImageUri()).fit().centerInside().rotate(90).into(holder.postImage);
+                Picasso.get().load(model.getPostImageUri()).into(holder.postImage);
                 Picasso.get().load(model.getUserProfileImageUri()).into(holder.profileImage); // 커맨트 프로파일 이미지
                 holder.countLikes(postKey,mUser.getUid(),likeRef);
                 holder.countComment(postKey,mUser.getUid(),commentRef);
@@ -180,6 +187,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 });
                 LoadComment(postKey);
+                holder.postImage.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(MainActivity.this, ImageViewActivity.class);
+                        intent.putExtra("uri", model.getPostImageUri());
+                        startActivity(intent);
+                    }
+                });
             }
 
             @NotNull
@@ -194,7 +209,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void LoadComment(String postKey) {
-        MyViewHolder.recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setStackFromEnd(true);
+        MyViewHolder.recyclerView.setLayoutManager(linearLayoutManager);
         commentOptions = new FirebaseRecyclerOptions.Builder<Comment>().setQuery(commentRef.child(postKey),Comment.class).build();
         commnetAdapter = new FirebaseRecyclerAdapter<Comment, CommentViewHolder>(commentOptions) {
             @Override
@@ -235,18 +252,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
-    private String calculateTimeAgo(String date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
-        try {
-            long time = sdf.parse(date).getTime();
-            long now = System.currentTimeMillis();
-            CharSequence ago =
-                    DateUtils.getRelativeTimeSpanString(time, now, DateUtils.MINUTE_IN_MILLIS);
-            return ago+"";
-        } catch (ParseException e) {
-            e.printStackTrace();
+    private static class TIME_MAXIMUM {
+        public static final int SEC = 60;
+        public static final int MIN = 60;
+        public static final int HOUR = 24;
+        public static final int DAY = 30;
+        public static final int MONTH = 12;
+    }
+
+    public static String formatTimeString(Date tempDate) {
+
+        long curTime = System.currentTimeMillis();
+        long regTime = tempDate.getTime();
+        long diffTime = (curTime - regTime) / 1000;
+
+        String msg = null;
+
+        if (diffTime < TIME_MAXIMUM.SEC) {
+            msg = "방금 전";
+        } else if ((diffTime /= TIME_MAXIMUM.SEC) < TIME_MAXIMUM.MIN) {
+            msg = diffTime + "분 전";
+        } else if ((diffTime /= TIME_MAXIMUM.MIN) < TIME_MAXIMUM.HOUR) {
+            msg = (diffTime) + "시간 전";
+        } else if ((diffTime /= TIME_MAXIMUM.HOUR) < TIME_MAXIMUM.DAY) {
+            msg = (diffTime) + "일 전";
+        } else if ((diffTime /= TIME_MAXIMUM.DAY) < TIME_MAXIMUM.MONTH) {
+            msg = (diffTime) + "달 전";
+        } else {
+            msg = (diffTime) + "년 전";
         }
-        return "";
+        return msg;
     }
 
     @Override
@@ -271,42 +306,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             mLoadingBar.show();
 
             Date date = new Date();
-            SimpleDateFormat formatter = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String strDate = formatter.format(date);
 
-            sRef.child(mUser.getUid()+strDate).putFile(imgUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onComplete(@NonNull @NotNull Task<UploadTask.TaskSnapshot> task) {
-                    if(task.isSuccessful()) {
-                        sRef.child(mUser.getUid()+strDate).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                HashMap map = new HashMap();
-                                map.put("date", strDate);
-                                map.put("postImageUri", uri.toString());
-                                map.put("postDesc", postDescription);
-                                map.put("userProfileImageUri", profileURIImgV);
-                                map.put("username", usernameV);
-                                mPostRef.child(mUser.getUid()+strDate).updateChildren(map).addOnSuccessListener(new OnSuccessListener() {
-                                    @Override
-                                    public void onSuccess(Object o) {
-                                        if(task.isSuccessful()) {
-                                            mLoadingBar.dismiss();
-                                            Toast.makeText(MainActivity.this, "업로드 완료", Toast.LENGTH_SHORT).show();
-                                            addImgPost.setImageResource(R.drawable.ic_add_post_image);
-                                            inputPostDescription.setText("");
-                                        } else {
-                                            mLoadingBar.dismiss();
-                                            Toast.makeText(MainActivity.this, "업로드 실패", Toast.LENGTH_SHORT).show();
-                                        }
-                                    }
-                                });
+            sRef.child(mUser.getUid()+strDate).putFile(imgUri).addOnCompleteListener(task -> {
+                if(task.isSuccessful()) {
+                    sRef.child(mUser.getUid()+strDate).getDownloadUrl().addOnSuccessListener(uri -> {
+                        HashMap map = new HashMap();
+                        map.put("date", strDate);
+                        map.put("postImageUri", uri.toString());
+                        map.put("postDesc", postDescription);
+                        map.put("userProfileImageUri", profileURIImgV);
+                        map.put("username", usernameV);
+                        mPostRef.child(mUser.getUid()+strDate).updateChildren(map).addOnSuccessListener(o -> {
+                            if(task.isSuccessful()) {
+                                mLoadingBar.dismiss();
+                                Toast.makeText(MainActivity.this, "업로드 완료", Toast.LENGTH_SHORT).show();
+                                addImgPost.setImageResource(R.drawable.ic_add_post_image);
+                                inputPostDescription.setText("");
+                            } else {
+                                mLoadingBar.dismiss();
+                                Toast.makeText(MainActivity.this, "업로드 실패", Toast.LENGTH_SHORT).show();
                             }
                         });
-                    } else {
-                        mLoadingBar.dismiss();
-                        Toast.makeText(MainActivity.this, "저장 실패", Toast.LENGTH_SHORT).show();
-                    }
+                    });
+                } else {
+                    mLoadingBar.dismiss();
+                    Toast.makeText(MainActivity.this, "저장 실패", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -322,13 +348,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(new Intent(MainActivity.this, ProfileActivity.class));
                 break;
             case R.id.friend:
-                Toast.makeText(this, "친구 목록", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(MainActivity.this, FriendActivity.class));
                 break;
             case R.id.find_friend:
                 startActivity(new Intent(MainActivity.this, FindFriendActivity.class));
                 break;
             case R.id.chat:
-                Toast.makeText(this, "채팅", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(MainActivity.this, ChatUsersActivity.class));
                 break;
             case R.id.logout:
                 mAuth.signOut();
